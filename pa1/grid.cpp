@@ -9,7 +9,7 @@
  * memory does not leak on destruction of a grid.
  */
 Grid::~Grid(){ /*your code here*/
-
+    clear();
 }
 
 /**
@@ -19,7 +19,32 @@ Grid::~Grid(){ /*your code here*/
  * Rotate headOfCol_ if necessary.
  */
 void Grid::rotateR(int r, int count) { /* your code here */
+    if (r < 0 || r >= headOfRow_.size()) return;
+    count = count % headOfCol_.size();
 
+    Node * mid = headOfRow_[r];
+    Node * above = mid->up;
+    Node * below = mid->down;
+    
+    for(int i = 0; i < headOfCol_.size(); i++) {
+        mid = above->down;
+        for (int j = 0; j < count; j++) {
+            mid = mid->left;
+        }
+        above->down = mid;
+        mid->up = above;
+        below->up = mid;
+        mid->down = below;
+
+        above = above->right;
+        below = below->right;
+
+        if (r == 0) {
+            headOfCol_[i] = mid;
+        }
+    }
+
+    headOfRow_[r] = mid->right;
 }
 
 /**
@@ -29,7 +54,31 @@ void Grid::rotateR(int r, int count) { /* your code here */
  * Rotate headOfRow_ if necessary.
  */
 void Grid::rotateC(int c, int count) { /* your code here */
+    if (c < 0 || c >= headOfCol_.size()) return;
+    count = count % headOfRow_.size();
 
+    Node * mid = headOfCol_[c];
+    Node * front = mid->right;
+    Node * back = mid->left;
+    
+    for(int i = 0; i < headOfRow_.size(); i++) {
+        mid = front->left;
+        for (int j = 0; j < count; j++) {
+            mid = mid->up;
+        }
+        front->left = mid;
+        mid->right = front;
+        back->right = mid;
+        mid->left = back;
+        front = front->down;
+        back = back->down;
+
+        if (c == 0) {
+            headOfRow_[i] = mid;
+        }
+    }
+
+    headOfCol_[c] = mid->down;
 }
 
 
