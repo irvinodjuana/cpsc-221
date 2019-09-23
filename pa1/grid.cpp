@@ -40,7 +40,21 @@ void Grid::rotateC(int c, int count) { /* your code here */
  * After clear() the grid represents an empty grid.
  */
 void Grid::clear() { /*your code here*/
+    for (int i = 0; i < headOfRow_.size(); i++) {
+        Node * head = headOfRow_[i];
+        if (head == NULL) continue;
+        Node * n = head->right;
 
+        while (n != head) {
+            n = n->right;
+            delete n->left;
+        }
+        delete n;
+        headOfRow_[i] = NULL;
+    }
+
+    bwidth_ = 0;
+    bheight_ = 0;
 }
 
 
