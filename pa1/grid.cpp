@@ -19,6 +19,7 @@ Grid::~Grid(){ /*your code here*/
  * Rotate headOfCol_ if necessary.
  */
 void Grid::rotateR(int r, int count) { /* your code here */
+    r = r % numRows();
     if (r < 0 || r >= headOfRow_.size()) return;
     count = count % headOfCol_.size();
 
@@ -54,6 +55,7 @@ void Grid::rotateR(int r, int count) { /* your code here */
  * Rotate headOfRow_ if necessary.
  */
 void Grid::rotateC(int c, int count) { /* your code here */
+    c = c % numCols();
     if (c < 0 || c >= headOfCol_.size()) return;
     count = count % headOfRow_.size();
 
@@ -115,5 +117,47 @@ void Grid::clear() { /*your code here*/
  * constructor and the assignment operator for Grids.
  */
 void Grid::copy(Grid const& other) { /*your code here*/
+    // temporary 2D storing pointers to all new copies of nodes
+    vector< vector < Node * >> N;
 
+    int nRows = other.numRows();
+    int nCols = other.numCols();
+
+    for (int i = 0; i < nRows; i++) {
+        vector< Node * > temp;
+        Node * curr = other.headOfRow_[i];
+        for (int j = 0; j < nCols; j++) {
+            Node * p = new Node(curr->block);
+            temp.push_back(p);
+            curr = curr->right;
+        }
+        N.push_back(temp);
+    }
+
+    for( int j=0; j<nRows; j++ ) {
+        for( int i=0; i<nCols; i++ ) {
+        Node *p = N[j][i];
+        // The following uses the C++ conditional operator
+        // (also known as the C ternary operator):
+        //
+        // (condition) ? (if_true) : (if_false)
+        //
+        // which has the value if_true if the condition is true
+        // and has the value if_false otherwise.
+        p->up    = N[(j==0) ? nRows-1 : j-1] [i]; 
+        p->down  = N[(j==nRows-1) ? 0 : j+1][i];
+        p->left  = N[j] [(i==0) ? nCols-1 : i-1];
+        p->right = N[j] [(i==nCols-1) ? 0 : i+1];
+        }
+    }
+
+    for (int i = 0; i < other.numRows(); i++) {
+        headOfRow_.push_back(N[i][0]);
+    }
+    for (int j = 0; j < other.numCols(); j++) {
+        headOfCol_.push_back(N[0][j]);
+    }
+
+    bheight_ = other.bheight_;
+    bwidth_ = other.bwidth_;
 }

@@ -27,7 +27,7 @@ using namespace std;
   g.rotateR(0, 1);\
   g.rotateC(1, 1);\
   g.rotateR(0, 2);\
-  g.rotateC(1,2);
+  g.rotateC(1, 2);\
 
 /**
  * Grid: This is a container class for blocks. It is implemented
