@@ -18,9 +18,6 @@ Deque<T>::Deque():n1(0),n2(0){}
 template <class T>
 void Deque<T>::pushR(T newItem)
 {
-    /**
-     * @todo Your code here!
-     */
     if (data.size() == 0) {
         data.push_back(newItem);
         n1 = n2 = 0;
@@ -55,11 +52,8 @@ void Deque<T>::pushR(T newItem)
 template <class T>
 T Deque<T>::popL()
 {
-    /**
-     * @todo Your code here! 
-     */
     T result = data[n1];
-    n1 = (n1 + 1) % 8;
+    n1 = (n1 + 1) % data.size();
 
     int size;
     if (n2 < n1) {
@@ -70,23 +64,21 @@ T Deque<T>::popL()
     if (size <= data.size() / 4) {
         // data occupies < 1/4 of space, resize down to 1/2
         int dsize = data.size();
-        vector<T> copy (dsize / 2);
+        vector<T> copy (size * 2);
         if (n2 < n1) {
             for (int i = n1; i < data.size(); i++)
                 copy[i-n1] = data[i];
             for (int i = 0; i < n2; i++)
                 copy[i + dsize - n1] = data[i];
         } else {
-            for (int i = n1; i < n2; i++) {
+            for (int i = n1; i < n2; i++)
                 copy[i-n1] = data[i];
-            }
         }
         // reassign indices and data
         data = copy;
         n1 = 0;
         n2 = size;
     }
-
     return result;
 }
 
@@ -101,11 +93,7 @@ T Deque<T>::popL()
 template <class T>
 T Deque<T>::popR()
 {
-    /**
-     * @todo Your code here! 
-     */
-
-    n2 = (n2 + data.size -1) % data.size;
+    n2 = (n2 + data.size() -1) % data.size();
     T result = data[n2];
 
     int size;
@@ -114,26 +102,24 @@ T Deque<T>::popR()
     } else {
         size = n2 - n1;
     }
-    if (size <= data.size() / 4) {
+    if (size <= (data.size() / 4)) {
         // data occupies < 1/4 of space, resize down to 1/2
         int dsize = data.size();
-        vector<T> copy (dsize / 2);
+        vector<T> copy (size * 2);
         if (n2 < n1) {
             for (int i = n1; i < data.size(); i++)
                 copy[i-n1] = data[i];
             for (int i = 0; i < n2; i++)
                 copy[i + dsize - n1] = data[i];
         } else {
-            for (int i = n1; i < n2; i++) {
+            for (int i = n1; i < n2; i++)
                 copy[i-n1] = data[i];
-            }
         }
         // reassign indices and data
         data = copy;
         n1 = 0;
         n2 = size;
     }
-
     return result;
 }
 
@@ -166,7 +152,7 @@ T Deque<T>::peekR()
     /**
      * @todo Your code here! 
      */
-    return data[(n2 data.size() - 1) % data.size()];
+    return data[(n2 + data.size() - 1) % data.size()];
 }
 
 
@@ -179,9 +165,6 @@ T Deque<T>::peekR()
 template <class T>
 bool Deque<T>::isEmpty() const
 {
-    /**
-     * @todo Your code here! 
-     */
     return data.size() == 0;
 }
 

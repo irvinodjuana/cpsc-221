@@ -18,6 +18,7 @@ void Stack<T>::push(T newItem)
     /**
      * @todo Your code here!
      */
+    myStack.pushR(newItem);
 }
 
 /**
@@ -35,7 +36,7 @@ T Stack<T>::pop()
     /**
      * @todo Your code here! 
      */
-    
+    return myStack.popR();
 }
 
 /**
@@ -50,6 +51,7 @@ void Stack<T>::add(T theItem)
      * @todo Your code here! Hint: this should call another Stack function
      *  to add the element to the Stack.
      */
+    push(theItem);
 }
 
 /**
@@ -64,6 +66,7 @@ T Stack<T>::remove()
      * @todo Your code here! Hint: this should call another Stack function
      *  to remove an element from the Stack and return it. 
      */
+    return pop();
 }
 
 /**
@@ -80,6 +83,7 @@ T Stack<T>::peek()
     /**
      * @todo Your code here! 
      */
+    return myStack.peekR();
 }
 
 /**
@@ -96,4 +100,5 @@ bool Stack<T>::isEmpty() const
     /**
      * @todo Your code here! 
      */
+    return myStack.isEmpty();
 }
