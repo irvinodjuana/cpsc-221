@@ -8,5 +8,5 @@ solidColorPicker::solidColorPicker()
 HSLAPixel solidColorPicker::operator()(point p)
 {
 /* your code here */
-
+    return p.c.color;
 }
