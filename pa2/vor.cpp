@@ -20,6 +20,8 @@ animation filler::vorSolidDFS(PNG& img, double density, int frameFreq)
      * @todo Your code here! 
      */
 
+    solidColorPicker a;
+    return vor<Stack>(img, density, a, frameFreq);
 }
 
 animation filler::vorFadeDFS(PNG& img, double density, double fadeFactor, int frameFreq)
@@ -27,7 +29,8 @@ animation filler::vorFadeDFS(PNG& img, double density, double fadeFactor, int fr
     /**
      * @todo Your code here! 
      */
-
+    fadeColorPicker a(fadeFactor);
+    return vor<Stack>(img, density, a, frameFreq);
 }
 
 
@@ -44,6 +47,8 @@ animation filler::vorSolidBFS(PNG& img, double density, int frameFreq)
     /**
      * @todo Your code here! 
      */
+    solidColorPicker a;
+    return vor<Queue>(img, density, a, frameFreq);
 }
 
 animation filler::vorFadeBFS(PNG& img, double density, double fadeFactor, int frameFreq)
@@ -51,6 +56,104 @@ animation filler::vorFadeBFS(PNG& img, double density, double fadeFactor, int fr
     /**
      * @todo Your code here! 
      */
+    fadeColorPicker a(fadeFactor);
+    return vor<Queue>(img, density, a, frameFreq);
+}
+
+// helper for vor
+template <template <class T> class OrderingStructure>
+bool vector_is_empty(vector<OrderingStructure<point>> o_s){
+    for(int i=0; i<o_s.size(); i++){
+        if(!o_s[i].isEmpty()){
+            return false;
+        }
+    }
+    return true;
+}
+
+// helper for get_valid_neighbors
+bool is_valid_and_mark(int x, int y, PNG& img, center c, int k, set<int>& tracker_x, set<int>& tracker_y){
+
+    // point is not inside img
+    if(x<0 || x>img.width()){
+        return false;
+    }
+    if(y<0 || y>img.height()){
+        return false;
+    }
+
+    // this position has already been marked
+    if(tracker_x.find(x) != tracker_x.end() && tracker_y.find(y) != tracker_y.end()){
+        return false;
+    }
+
+    // neighbor is not k distance from center
+    int dist_squared = (x-c.x)*(x-c.x) + (y-c.y)*(y-c.y);
+    if(dist_squared > k*k){
+        return false;
+    }
+
+    // thus the point is valid, mark it in tracker_x and tracker_y
+    tracker_x.insert(x);
+    tracker_y.insert(y);
+
+    return true;
+}
+
+// helper for vor
+vector<point> get_valid_neighbors(PNG& img, point p, center c, int k, set<int>& tracker_x, set<int>& tracker_y){
+    
+    vector<point> ret;
+
+    // top
+    if(is_valid_and_mark(p.x, p.y-1, img, c, k, tracker_x, tracker_y)){
+        point top(p.x, p.y-1, c, k+1);
+        ret.push_back(top);
+    }
+
+    // topleft
+    if(is_valid_and_mark(p.x-1, p.y-1, img, c, k, tracker_x, tracker_y)){
+        point topleft(p.x-1, p.y-1, c, k+1);
+        ret.push_back(topleft);
+    }
+
+    // left
+    if(is_valid_and_mark(p.x-1, p.y, img, c, k, tracker_x, tracker_y)){
+        point left(p.x-1, p.y, c, k+1);
+        ret.push_back(left);
+    }
+
+    // botleft
+    if(is_valid_and_mark(p.x-1, p.y+1, img, c, k, tracker_x, tracker_y)){
+        point botleft(p.x-1, p.y+1, c, k+1);
+        ret.push_back(botleft);
+    }
+
+    // bot
+    if(is_valid_and_mark(p.x, p.y+1, img, c, k, tracker_x, tracker_y)){
+        point bot(p.x, p.y+1, c, k+1);
+        ret.push_back(bot);
+    }
+
+    // botright
+    if(is_valid_and_mark(p.x+1, p.y+1, img, c, k, tracker_x, tracker_y)){
+        point botright(p.x+1, p.y+1, c, k+1);
+        ret.push_back(botright);
+    }
+
+    // right
+    if(is_valid_and_mark(p.x+1, p.y, img, c, k, tracker_x, tracker_y)){
+        point right(p.x+1, p.y, c, k+1);
+        ret.push_back(right);
+    }
+
+    // topright
+    if(is_valid_and_mark(p.x+1, p.y-1, img, c, k, tracker_x, tracker_y)){
+        point topright(p.x+1, p.y-1, c, k+1);
+        ret.push_back(topright);
+    }
+
+    return ret;
 }
 
 
@@ -107,7 +210,7 @@ animation filler::vor(PNG& img, double density, colorPicker& fillColor,
      *              describe this more carefully below. We call these the "valid"
      *              neighbors.
      *        ii.    use the colorPicker to set the new color of the valid neighbors.
-     *        iii.    mark the valid neighbors as processed.
+     *        iii.   mark the valid neighbors as processed.
      *        iv.    as each neighbor is processed, if it is an appropriate 
      *              frame, send the current PNG to the
      *              animation (as described below).
@@ -168,5 +271,67 @@ animation filler::vor(PNG& img, double density, colorPicker& fillColor,
       * we will be grading vor.h. File "vor_given.cpp also includes the function
       * used to generate the original set of centers. 
       */
+    
+    // getting the centers.
+    vector<center> centers = filler::randSample(img, density);
 
+    // dict to keep track of which x,y coordinates have been processed.
+    set<int> tracker_x;
+    set<int> tracker_y;
+
+    // Each center will have its own ordering structure
+    vector<OrderingStructure<point>> patches;
+    for(int i=0; i<centers.size(); i++){
+        OrderingStructure<point> temp;
+        temp.add(point(centers[i]));
+        
+        tracker_x.insert(centers[i].x);
+        tracker_y.insert(centers[i].y);
+        patches.push_back(temp);
+    }
+
+    // animation
+    animation ani;
+    // start filling the PNG make.
+    PNG make(img.width(),img.height());
+    // int k is the distance from the center.
+    int k;
+    // int g is the amount of pixels added since last frame
+    int g = 0;
+
+    while(!vector_is_empty(patches)){
+
+        for(int i=0; i<patches.size(); i++){
+            OrderingStructure<point> os = patches[i];
+            if(os.isEmpty()) continue;
+            k = os.peek().level;
+
+            while(!os.isEmpty() && os.peek().level==k){
+
+                point p = os.remove();
+
+                // the order the valide neighbors are returned will be starting from top and in ccw
+                vector<point> neighbors = get_valid_neighbors(img, p, centers[i], k+1, tracker_x, tracker_y);
+                
+                for(int i = 0; i < neighbors.size(); i++){
+                    point neigh = neighbors[i];
+                    
+                    //paint the color and then insert the valid neighbor into the os
+                    *(make.getPixel(neigh.x, neigh.y)) = fillColor(neigh);
+                    os.add(neigh);
+                    g++;
+                    
+                    // once g reaches frame frequency, add the png to gif and reset g
+                    if(g==frameFreq){
+                        g=0;
+                        ani.addFrame(make);
+                    }
+                }
+
+            }
+
+        }
+    }
+    // as we leave the function send the last PNG as the last frame
+    ani.addFrame(make);
 } 

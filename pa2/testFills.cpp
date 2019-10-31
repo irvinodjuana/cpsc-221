@@ -74,39 +74,39 @@ PNG testColorPicker(colorPicker& picker)
 //     REQUIRE(result == expected);
 // }
 
-TEST_CASE("colorPicker::basic solid","[weight=1][part=colorPicker]"){
-    solidColorPicker solidPicker;
+// TEST_CASE("colorPicker::basic solid","[weight=1][part=colorPicker]"){
+//     solidColorPicker solidPicker;
 
-    PNG result = testColorPicker(solidPicker);
-    result.writeToFile("images/solidColorPickerTest.png");
-    PNG expected; expected.readFromFile("soln_images/solidColorPickerTest.png");
-    REQUIRE(result == expected);
-}
-
-TEST_CASE("colorPicker::basic fade","[weight=1][part=colorPicker]"){
-    fadeColorPicker fadePicker(FADERATE);
-
-    PNG result = testColorPicker(fadePicker);
-    result.writeToFile("images/fadeColorPickerTest.png");
-    PNG expected; expected.readFromFile("soln_images/fadeColorPickerTest.png");
-    REQUIRE(result == expected);
-}
-
-
-// TEST_CASE("fill::basic dot dfs","[weight=1][part=fill]"){
-//     PNG img;
-//     img.readFromFile(GRIDTESTIMAGE);
-
-//     animation anim;
-
-//     anim = filler::vorDotDFS(img, DENSITY, GRIDGRIDSPACING, DOTSIZE,
-//                                      GRIDFRAMEFREQ);
-
-//     PNG result = anim.write("images/dfsdotleaf.gif");
-//     result.writeToFile("images/dfsdotleaf.png");
-//     PNG expected; expected.readFromFile("soln_images/dfsdotleaf.png");
-//     REQUIRE(result==expected);
+//     PNG result = testColorPicker(solidPicker);
+//     result.writeToFile("images/solidColorPickerTest.png");
+//     PNG expected; expected.readFromFile("soln_images/solidColorPickerTest.png");
+//     REQUIRE(result == expected);
 // }
+
+// TEST_CASE("colorPicker::basic fade","[weight=1][part=colorPicker]"){
+//     fadeColorPicker fadePicker(FADERATE);
+
+//     PNG result = testColorPicker(fadePicker);
+//     result.writeToFile("images/fadeColorPickerTest.png");
+//     PNG expected; expected.readFromFile("soln_images/fadeColorPickerTest.png");
+//     REQUIRE(result == expected);
+// }
+
+
+TEST_CASE("fill::basic dot dfs","[weight=1][part=fill]"){
+    PNG img;
+    img.readFromFile(GRIDTESTIMAGE);
+
+    animation anim;
+
+    anim = filler::vorDotDFS(img, DENSITY, GRIDGRIDSPACING, DOTSIZE,
+                                     GRIDFRAMEFREQ);
+
+    PNG result = anim.write("images/dfsdotleaf.gif");
+    result.writeToFile("images/dfsdotleaf.png");
+    PNG expected; expected.readFromFile("soln_images/dfsdotleaf.png");
+    REQUIRE(result==expected);
+}
 
 // TEST_CASE("fill::basic solid dfs","[weight=1][part=fill]"){
 //     PNG img;
