@@ -62,7 +62,7 @@ animation filler::vorFadeBFS(PNG& img, double density, double fadeFactor, int fr
 
 // helper for vor
 template <template <class T> class OrderingStructure>
-bool vector_is_empty(vector<OrderingStructure<point>> o_s){
+bool filler::vector_is_empty(vector<OrderingStructure<point>> o_s){
     for(int i=0; i<o_s.size(); i++){
         if(!o_s[i].isEmpty()){
             return false;
@@ -72,7 +72,7 @@ bool vector_is_empty(vector<OrderingStructure<point>> o_s){
 }
 
 // helper for get_valid_neighbors
-bool is_valid_and_mark(int x, int y, PNG& img, center c, int k, set<int>& tracker_x, set<int>& tracker_y){
+bool filler::is_valid_and_mark(int x, int y, PNG& img, center c, int k, set<int>& tracker_x, set<int>& tracker_y){
 
     // point is not inside img
     if(x<0 || x>img.width()){
@@ -101,54 +101,54 @@ bool is_valid_and_mark(int x, int y, PNG& img, center c, int k, set<int>& tracke
 }
 
 // helper for vor
-vector<point> get_valid_neighbors(PNG& img, point p, center c, int k, set<int>& tracker_x, set<int>& tracker_y){
+vector<point> filler::get_valid_neighbors(PNG& img, point p, center c, int k, set<int>& tracker_x, set<int>& tracker_y){
     
     vector<point> ret;
 
     // top
-    if(is_valid_and_mark(p.x, p.y-1, img, c, k, tracker_x, tracker_y)){
+    if(filler::is_valid_and_mark(p.x, p.y-1, img, c, k, tracker_x, tracker_y)){
         point top(p.x, p.y-1, c, k+1);
         ret.push_back(top);
     }
 
     // topleft
-    if(is_valid_and_mark(p.x-1, p.y-1, img, c, k, tracker_x, tracker_y)){
+    if(filler::is_valid_and_mark(p.x-1, p.y-1, img, c, k, tracker_x, tracker_y)){
         point topleft(p.x-1, p.y-1, c, k+1);
         ret.push_back(topleft);
     }
 
     // left
-    if(is_valid_and_mark(p.x-1, p.y, img, c, k, tracker_x, tracker_y)){
+    if(filler::is_valid_and_mark(p.x-1, p.y, img, c, k, tracker_x, tracker_y)){
         point left(p.x-1, p.y, c, k+1);
         ret.push_back(left);
     }
 
     // botleft
-    if(is_valid_and_mark(p.x-1, p.y+1, img, c, k, tracker_x, tracker_y)){
+    if(filler::is_valid_and_mark(p.x-1, p.y+1, img, c, k, tracker_x, tracker_y)){
         point botleft(p.x-1, p.y+1, c, k+1);
         ret.push_back(botleft);
     }
 
     // bot
-    if(is_valid_and_mark(p.x, p.y+1, img, c, k, tracker_x, tracker_y)){
+    if(filler::is_valid_and_mark(p.x, p.y+1, img, c, k, tracker_x, tracker_y)){
         point bot(p.x, p.y+1, c, k+1);
         ret.push_back(bot);
     }
 
     // botright
-    if(is_valid_and_mark(p.x+1, p.y+1, img, c, k, tracker_x, tracker_y)){
+    if(filler::is_valid_and_mark(p.x+1, p.y+1, img, c, k, tracker_x, tracker_y)){
         point botright(p.x+1, p.y+1, c, k+1);
         ret.push_back(botright);
     }
 
     // right
-    if(is_valid_and_mark(p.x+1, p.y, img, c, k, tracker_x, tracker_y)){
+    if(filler::is_valid_and_mark(p.x+1, p.y, img, c, k, tracker_x, tracker_y)){
         point right(p.x+1, p.y, c, k+1);
         ret.push_back(right);
     }
 
     // topright
-    if(is_valid_and_mark(p.x+1, p.y-1, img, c, k, tracker_x, tracker_y)){
+    if(filler::is_valid_and_mark(p.x+1, p.y-1, img, c, k, tracker_x, tracker_y)){
         point topright(p.x+1, p.y-1, c, k+1);
         ret.push_back(topright);
     }
@@ -273,14 +273,14 @@ animation filler::vor(PNG& img, double density, colorPicker& fillColor,
       */
     
     // getting the centers.
-    vector<center> centers = filler::randSample(img, density);
+    vector<center> centers = randSample(img, density);
 
     // dict to keep track of which x,y coordinates have been processed.
     set<int> tracker_x;
     set<int> tracker_y;
 
     // Each center will have its own ordering structure
-    vector<OrderingStructure<point>> patches;
+    vector<OrderingStructure<point>> patches ;
     for(int i=0; i<centers.size(); i++){
         OrderingStructure<point> temp;
         temp.add(point(centers[i]));
@@ -303,7 +303,9 @@ animation filler::vor(PNG& img, double density, colorPicker& fillColor,
 
         for(int i=0; i<patches.size(); i++){
             OrderingStructure<point> os = patches[i];
+            
             if(os.isEmpty()) continue;
+
             k = os.peek().level;
 
             while(!os.isEmpty() && os.peek().level==k){
@@ -317,7 +319,7 @@ animation filler::vor(PNG& img, double density, colorPicker& fillColor,
                     point neigh = neighbors[i];
                     
                     //paint the color and then insert the valid neighbor into the os
-                    *(make.getPixel(neigh.x, neigh.y)) = fillColor(neigh);
+                    *make.getPixel(neigh.x, neigh.y) = fillColor(neigh);
                     os.add(neigh);
                     g++;
                     
@@ -327,11 +329,10 @@ animation filler::vor(PNG& img, double density, colorPicker& fillColor,
                         ani.addFrame(make);
                     }
                 }
-
             }
-
         }
     }
     // as we leave the function send the last PNG as the last frame
     ani.addFrame(make);
-} 
+
+}

@@ -13,12 +13,12 @@
 #include "point.h"
 #include "animation.h"
 
-
 #include "dotColorPicker.h"
 #include "solidColorPicker.h"
 #include "fadeColorPicker.h"
 #include <random>
 #include <vector>
+#include <set> 
 
 using namespace cs221util;
 using namespace std;
@@ -76,6 +76,7 @@ namespace filler
          * @return An animation that shows the fill progressing over the image.
          */
         animation vorSolidBFS(PNG& img, double density, int frameFreq);
+        
         /**
          * Performs a voronoi fill based on the given image using the color of 
          * the centers and employing a breadth-first-search approach. This fill
@@ -131,32 +132,46 @@ namespace filler
         animation vorDotBFS(PNG& img, double density,
                            int dotGrid, int dotSize, int frameFreq);
 
+        /* 
+        * Given in file vor_given.cpp. samples randomly or regularly.  It will
+        * generate regular centers for the test cases.
+        */
+        vector<center> randSample(PNG& img, double density);
 
-/* 
- * Given in file vor_given.cpp. samples randomly or regularly.  It will
- * generate regular centers for the test cases.
-*/
+        /**
+         * helper for vor
+         * checks if a vector of orderingStructure is empty
+         */
+        template <template <class T> class OrderingStructure>
+        bool vector_is_empty(vector<OrderingStructure<point>> os);
 
-vector<center> randSample(PNG& img, double density);
+        /**
+         * helper for vor
+         * gets the neighbors
+         */
+        vector<point> get_valid_neighbors(PNG& img, point p, center c, int k, set<int>& tracker_x, set<int>& tracker_y);
 
+        // helper for get valid neighbors :(
+        bool is_valid_and_mark(int x, int y, PNG& img, center c, int k, set<int>& tracker_x, set<int>& tracker_y);
 
-    /**
-     * General filling function: a general helper that should be invoked by
-     * all of the public fill functions with the appropriate color picker
-     * for that type of fill.
-     *
-     * @param img Image to do the filling on.
-     * @param density Determines how many centers to use in the diagram
-     * @param fillColor The colorPicker function object to be used for the fill.
-     * @param frameFreq How frequently to add a frame to the animation, in
-     *  pixels. For instance, if frameFreq == 1, a frame is added when every
-     *  pixel is filled. If frameFreq == 10, a frame is added after every 10
-     *  pixels is filled.
-     * @return An animation that shows the fill progressing over the image.
-     */
-    template <template <class T> class OrderingStructure>
-    animation vor(PNG& img, double density, colorPicker& fillColor,
-                   int frameFreq);
+        /**
+         * General filling function: a general helper that should be invoked by
+         * all of the public fill functions with the appropriate color picker
+         * for that type of fill.
+         *
+         * @param img Image to do the filling on.
+         * @param density Determines how many centers to use in the diagram
+         * @param fillColor The colorPicker function object to be used for the fill.
+         * @param frameFreq How frequently to add a frame to the animation, in
+         *  pixels. For instance, if frameFreq == 1, a frame is added when every
+         *  pixel is filled. If frameFreq == 10, a frame is added after every 10
+         *  pixels is filled.
+         * @return An animation that shows the fill progressing over the image.
+         */
+        template <template <class T> class OrderingStructure>
+        animation vor(PNG& img, double density, colorPicker& fillColor, int frameFreq);
+        
+                
 }
 
 #include "vor_given.cpp"
