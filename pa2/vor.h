@@ -143,7 +143,7 @@ namespace filler
          * checks if a vector of orderingStructure is empty
          */
         template <template <class T> class OrderingStructure>
-        bool vector_is_empty(vector<OrderingStructure<point>> os);
+        bool vector_is_empty(vector<OrderingStructure<point>> & os);
 
         /**
          * helper for vor

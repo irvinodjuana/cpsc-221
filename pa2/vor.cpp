@@ -62,7 +62,7 @@ animation filler::vorFadeBFS(PNG& img, double density, double fadeFactor, int fr
 
 // helper for vor
 template <template <class T> class OrderingStructure>
-bool filler::vector_is_empty(vector<OrderingStructure<point>> o_s){
+bool filler::vector_is_empty(vector<OrderingStructure<point>> & o_s){
     for(int i=0; i<o_s.size(); i++){
         if(!o_s[i].isEmpty()){
             return false;
@@ -71,14 +71,14 @@ bool filler::vector_is_empty(vector<OrderingStructure<point>> o_s){
     return true;
 }
 
-// helper for get_valid_neighbors
+// helper for get valid neighbors
 bool filler::is_valid_and_mark(int x, int y, PNG& img, center c, int k, vector<vector<bool>>& tracker){
 
     // point is not inside img
-    if(x<0 || x>img.width()){
+    if(x<0 || x>=img.width()){
         return false;
     }
-    if(y<0 || y>img.height()){
+    if(y<0 || y>=img.height()){
         return false;
     }
 
@@ -273,28 +273,6 @@ animation filler::vor(PNG& img, double density, colorPicker& fillColor,
     
     // getting the centers.
     vector<center> centers = randSample(img, density);
-
-    // 2D array to keep track of which x,y coordinates have been processed.
-    vector<vector<bool>> tracker;
-    
-    for(int i=0; i < img.width() ; i++){
-        vector<bool> y_vector;
-        tracker.push_back(y_vector);
-        for(int j=0; j<img.height() ; j++){
-            y_vector.push_back(false);
-        }
-    }
-
-    // Each center will have its own ordering structure
-    vector<OrderingStructure<point>> patches ;
-    for(int i=0; i<centers.size(); i++){
-        OrderingStructure<point> temp;
-        temp.add(point(centers[i]));
-    
-        tracker[centers[i].x][centers[i].y] = true;
-        patches.push_back(temp);
-    }
-
     // animation
     animation ani;
     // start filling the PNG make.
@@ -303,6 +281,40 @@ animation filler::vor(PNG& img, double density, colorPicker& fillColor,
     int k;
     // int g is the amount of pixels added since last frame
     int g = 0;
+
+    
+
+    // 2D array to keep track of which x,y coordinates have been processed.
+    vector<vector<bool>> tracker;
+    
+    for(int i=0; i < img.width() ; i++){
+        vector<bool> y_vector;
+        for(int j=0; j<img.height() ; j++){
+            y_vector.push_back(false);
+        }
+        tracker.push_back(y_vector);
+    }
+
+    // Each center will have its own ordering structure
+    vector<OrderingStructure<point>> patches ;
+    for(int i=0; i<centers.size(); i++){
+        OrderingStructure<point> temp;
+        point p_ctr = point(centers[i]);
+
+        *make.getPixel(p_ctr.x, p_ctr.y) = fillColor(p_ctr);
+        tracker[p_ctr.x][p_ctr.y] = true;
+        temp.add(p_ctr);
+        patches.push_back(temp);
+
+        g++;
+        // once g reaches frame frequency, add the png to gif and reset g
+        if(g==frameFreq){
+            g=0;
+            ani.addFrame(make);
+        }
+    }
+   
+    int stop = 0;
 
     while(!vector_is_empty(patches)){
 
@@ -313,6 +325,8 @@ animation filler::vor(PNG& img, double density, colorPicker& fillColor,
 
             k = os.peek().level;
 
+            cout << "i: " << i << ", k: " << k << endl;
+
             while(!os.isEmpty() && os.peek().level==k){
 
                 point p = os.remove();
@@ -320,8 +334,8 @@ animation filler::vor(PNG& img, double density, colorPicker& fillColor,
                 // the order the valide neighbors are returned will be starting from top and in ccw
                 vector<point> neighbors = get_valid_neighbors(img, p, centers[i], k+1, tracker);
                 
-                for(int i = 0; i < neighbors.size(); i++){
-                    point neigh = neighbors[i];
+                for(int j = 0; j < neighbors.size(); j++){
+                    point neigh = neighbors[j];
                     
                     //paint the color and then insert the valid neighbor into the os
                     *make.getPixel(neigh.x, neigh.y) = fillColor(neigh);
@@ -335,9 +349,11 @@ animation filler::vor(PNG& img, double density, colorPicker& fillColor,
                     }
                 }
             }
+            patches[i] = os;
         }
+        if (stop++ > 2000) return ani;
     }
     // as we leave the function send the last PNG as the last frame
     ani.addFrame(make);
-
+    return ani;
 }
