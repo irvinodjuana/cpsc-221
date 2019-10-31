@@ -72,7 +72,7 @@ bool filler::vector_is_empty(vector<OrderingStructure<point>> o_s){
 }
 
 // helper for get_valid_neighbors
-bool filler::is_valid_and_mark(int x, int y, PNG& img, center c, int k, set<int>& tracker_x, set<int>& tracker_y){
+bool filler::is_valid_and_mark(int x, int y, PNG& img, center c, int k, vector<vector<bool>>& tracker){
 
     // point is not inside img
     if(x<0 || x>img.width()){
@@ -83,7 +83,7 @@ bool filler::is_valid_and_mark(int x, int y, PNG& img, center c, int k, set<int>
     }
 
     // this position has already been marked
-    if(tracker_x.find(x) != tracker_x.end() && tracker_y.find(y) != tracker_y.end()){
+    if(tracker[x][y] == true){
         return false;
     }
 
@@ -94,62 +94,61 @@ bool filler::is_valid_and_mark(int x, int y, PNG& img, center c, int k, set<int>
     }
 
     // thus the point is valid, mark it in tracker_x and tracker_y
-    tracker_x.insert(x);
-    tracker_y.insert(y);
+    tracker[x][y] = true;
 
     return true;
 }
 
 // helper for vor
-vector<point> filler::get_valid_neighbors(PNG& img, point p, center c, int k, set<int>& tracker_x, set<int>& tracker_y){
+vector<point> filler::get_valid_neighbors(PNG& img, point p, center c, int k, vector<vector<bool>>& tracker){
     
     vector<point> ret;
 
     // top
-    if(filler::is_valid_and_mark(p.x, p.y-1, img, c, k, tracker_x, tracker_y)){
-        point top(p.x, p.y-1, c, k+1);
+    if(filler::is_valid_and_mark(p.x, p.y-1, img, c, k, tracker)){
+        point top(p.x, p.y-1, c, k);
         ret.push_back(top);
     }
 
     // topleft
-    if(filler::is_valid_and_mark(p.x-1, p.y-1, img, c, k, tracker_x, tracker_y)){
-        point topleft(p.x-1, p.y-1, c, k+1);
+    if(filler::is_valid_and_mark(p.x-1, p.y-1, img, c, k, tracker)){
+        point topleft(p.x-1, p.y-1, c, k);
         ret.push_back(topleft);
     }
 
     // left
-    if(filler::is_valid_and_mark(p.x-1, p.y, img, c, k, tracker_x, tracker_y)){
-        point left(p.x-1, p.y, c, k+1);
+    if(filler::is_valid_and_mark(p.x-1, p.y, img, c, k, tracker)){
+        point left(p.x-1, p.y, c, k);
         ret.push_back(left);
     }
 
     // botleft
-    if(filler::is_valid_and_mark(p.x-1, p.y+1, img, c, k, tracker_x, tracker_y)){
-        point botleft(p.x-1, p.y+1, c, k+1);
+    if(filler::is_valid_and_mark(p.x-1, p.y+1, img, c, k, tracker)){
+        point botleft(p.x-1, p.y+1, c, k);
         ret.push_back(botleft);
     }
 
     // bot
-    if(filler::is_valid_and_mark(p.x, p.y+1, img, c, k, tracker_x, tracker_y)){
-        point bot(p.x, p.y+1, c, k+1);
+    if(filler::is_valid_and_mark(p.x, p.y+1, img, c, k, tracker)){
+        point bot(p.x, p.y+1, c, k);
         ret.push_back(bot);
     }
 
     // botright
-    if(filler::is_valid_and_mark(p.x+1, p.y+1, img, c, k, tracker_x, tracker_y)){
-        point botright(p.x+1, p.y+1, c, k+1);
+    if(filler::is_valid_and_mark(p.x+1, p.y+1, img, c, k, tracker)){
+        point botright(p.x+1, p.y+1, c, k);
         ret.push_back(botright);
     }
 
     // right
-    if(filler::is_valid_and_mark(p.x+1, p.y, img, c, k, tracker_x, tracker_y)){
-        point right(p.x+1, p.y, c, k+1);
+    if(filler::is_valid_and_mark(p.x+1, p.y, img, c, k, tracker)){
+        point right(p.x+1, p.y, c, k);
         ret.push_back(right);
     }
 
     // topright
-    if(filler::is_valid_and_mark(p.x+1, p.y-1, img, c, k, tracker_x, tracker_y)){
-        point topright(p.x+1, p.y-1, c, k+1);
+    if(filler::is_valid_and_mark(p.x+1, p.y-1, img, c, k, tracker)){
+        point topright(p.x+1, p.y-1, c, k);
         ret.push_back(topright);
     }
 
@@ -275,18 +274,24 @@ animation filler::vor(PNG& img, double density, colorPicker& fillColor,
     // getting the centers.
     vector<center> centers = randSample(img, density);
 
-    // dict to keep track of which x,y coordinates have been processed.
-    set<int> tracker_x;
-    set<int> tracker_y;
+    // 2D array to keep track of which x,y coordinates have been processed.
+    vector<vector<bool>> tracker;
+    
+    for(int i=0; i < img.width() ; i++){
+        vector<bool> y_vector;
+        tracker.push_back(y_vector);
+        for(int j=0; j<img.height() ; j++){
+            y_vector.push_back(false);
+        }
+    }
 
     // Each center will have its own ordering structure
     vector<OrderingStructure<point>> patches ;
     for(int i=0; i<centers.size(); i++){
         OrderingStructure<point> temp;
         temp.add(point(centers[i]));
-        
-        tracker_x.insert(centers[i].x);
-        tracker_y.insert(centers[i].y);
+    
+        tracker[centers[i].x][centers[i].y] = true;
         patches.push_back(temp);
     }
 
@@ -313,7 +318,7 @@ animation filler::vor(PNG& img, double density, colorPicker& fillColor,
                 point p = os.remove();
 
                 // the order the valide neighbors are returned will be starting from top and in ccw
-                vector<point> neighbors = get_valid_neighbors(img, p, centers[i], k+1, tracker_x, tracker_y);
+                vector<point> neighbors = get_valid_neighbors(img, p, centers[i], k+1, tracker);
                 
                 for(int i = 0; i < neighbors.size(); i++){
                     point neigh = neighbors[i];

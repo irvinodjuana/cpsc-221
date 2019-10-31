@@ -149,10 +149,10 @@ namespace filler
          * helper for vor
          * gets the neighbors
          */
-        vector<point> get_valid_neighbors(PNG& img, point p, center c, int k, set<int>& tracker_x, set<int>& tracker_y);
+        vector<point> get_valid_neighbors(PNG& img, point p, center c, int k, vector<vector<bool>>& tracker);
 
         // helper for get valid neighbors :(
-        bool is_valid_and_mark(int x, int y, PNG& img, center c, int k, set<int>& tracker_x, set<int>& tracker_y);
+        bool is_valid_and_mark(int x, int y, PNG& img, center c, int k, vector<vector<bool>>& tracker);
 
         /**
          * General filling function: a general helper that should be invoked by
