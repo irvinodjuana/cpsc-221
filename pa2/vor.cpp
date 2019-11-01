@@ -273,6 +273,10 @@ animation filler::vor(PNG& img, double density, colorPicker& fillColor,
     
     // getting the centers.
     vector<center> centers = randSample(img, density);
+
+    //make sure no centers overlap
+    bool overlap_centers = false;
+
     // animation
     animation ani;
     // start filling the PNG make.
@@ -281,8 +285,6 @@ animation filler::vor(PNG& img, double density, colorPicker& fillColor,
     int k;
     // int g is the amount of pixels added since last frame
     int g = 0;
-
-    
 
     // 2D array to keep track of which x,y coordinates have been processed.
     vector<vector<bool>> tracker;
@@ -298,24 +300,28 @@ animation filler::vor(PNG& img, double density, colorPicker& fillColor,
     // Each center will have its own ordering structure
     vector<OrderingStructure<point>> patches ;
     for(int i=0; i<centers.size(); i++){
-        OrderingStructure<point> temp;
+
         point p_ctr = point(centers[i]);
 
-        *make.getPixel(p_ctr.x, p_ctr.y) = fillColor(p_ctr);
-        tracker[p_ctr.x][p_ctr.y] = true;
-        temp.add(p_ctr);
-        patches.push_back(temp);
+        // if the center is not already inside tracker(i.e. not a duplicate)
+        if(!tracker[p_ctr.x][p_ctr.y]){
+            OrderingStructure<point> temp;
 
-        g++;
-        // once g reaches frame frequency, add the png to gif and reset g
-        if(g==frameFreq){
-            g=0;
-            ani.addFrame(make);
+            *make.getPixel(p_ctr.x, p_ctr.y) = fillColor(p_ctr);
+            tracker[p_ctr.x][p_ctr.y] = true;
+            temp.add(p_ctr);
+            patches.push_back(temp);
+
+            g++;
+            // once g reaches frame frequency, add the png to gif and reset g
+            if(g==frameFreq){
+                g=0;
+                ani.addFrame(make);
+            }
         }
     }
-   
-    int stop = 0;
-
+    
+    // centers.size() != patches.size()
     while(!vector_is_empty(patches)){
 
         for(int i=0; i<patches.size(); i++){
@@ -325,14 +331,12 @@ animation filler::vor(PNG& img, double density, colorPicker& fillColor,
 
             k = os.peek().level;
 
-            cout << "i: " << i << ", k: " << k << endl;
-
             while(!os.isEmpty() && os.peek().level==k){
 
                 point p = os.remove();
 
                 // the order the valide neighbors are returned will be starting from top and in ccw
-                vector<point> neighbors = get_valid_neighbors(img, p, centers[i], k+1, tracker);
+                vector<point> neighbors = get_valid_neighbors(img, p, p.c, k+1, tracker);
                 
                 for(int j = 0; j < neighbors.size(); j++){
                     point neigh = neighbors[j];
@@ -351,7 +355,6 @@ animation filler::vor(PNG& img, double density, colorPicker& fillColor,
             }
             patches[i] = os;
         }
-        if (stop++ > 2000) return ani;
     }
     // as we leave the function send the last PNG as the last frame
     ani.addFrame(make);

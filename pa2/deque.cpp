@@ -35,18 +35,19 @@ T Deque<T>::popL()
 {
     T result = data[n1];
     n1++;
-
-    vector<T> copy;
-    for (int i = n1; i <= n2; i++) {
-        copy.push_back(data[i]);
+    
+    if(n2-n1 < int(data.size()/2)){
+        vector<T> copy;
+        for (int i = n1; i <= n2; i++) {
+            copy.push_back(data[i]);
+        }
+        n1 = 0;
+        n2 = copy.size() - 1;
+        data = copy;
     }
-    n1 = 0;
-    n2 = copy.size() - 1;
-    data = copy;
+
     return result;
 }
-
-
 
 /**
  * Removes the object at the right of the Deque, and returns it to the
@@ -58,15 +59,19 @@ template <class T>
 T Deque<T>::popR()
 {
     T result = data[n2];
+    data.pop_back();
     n2--;
 
-    vector<T> copy;
-    for (int i = n1; i <= n2; i++) {
-        copy.push_back(data[i]);
+    if(n2-n1 < int(data.size()/2)){
+        vector<T> copy;
+        for (int i = n1; i <= n2; i++) {
+            copy.push_back(data[i]);
+        }
+        n1 = 0;
+        n2 = copy.size() - 1;
+        data = copy;
     }
-    n1 = 0;
-    n2 = copy.size() - 1;
-    data = copy;
+
     return result;
 }
 
@@ -102,8 +107,6 @@ T Deque<T>::peekR()
     return data[n2];
 }
 
-
-
 /**
  * Determines if the Deque is empty.
  *
@@ -112,6 +115,5 @@ T Deque<T>::peekR()
 template <class T>
 bool Deque<T>::isEmpty() const
 {
-    return data.size() == 0;
+    return n1+n2<0;
 }
-
