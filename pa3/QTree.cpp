@@ -56,24 +56,27 @@ QTree::QTree(PNG & imIn, int leafB, bool bal)
   construct(imIn);
 }
 
-void QTree::construct(PNG & imIn) {
+void QTree::construct(const PNG & imIn) {
+  // Assign QTree image, size, root node
   im = imIn;
   pair<int, int> ul(0, 0);
   size = biggestPow2(min(im.height(), im.width()));
   root = new Node(im, ul, size, NULL);
   numLeaf = 1;
 
-  priority_queue<Node*, vector<Node*>, Comparator> p_queue;
-  p_queue.push(root);
+  // Create priority queue to split nodes in order 
+  // of variance, up to approx. leafBound
+  priority_queue<Node*, vector<Node*>, Comparator> split_queue;
+  split_queue.push(root);
 
   while(numLeaf < leafBound) {
-    Node* next = p_queue.top();
-    p_queue.pop();
+    Node* next = split_queue.top();
+    split_queue.pop();
     split(next);
-    p_queue.push(next->nw);
-    p_queue.push(next->ne);
-    p_queue.push(next->sw);
-    p_queue.push(next->se);
+    split_queue.push(next->nw);
+    split_queue.push(next->ne);
+    split_queue.push(next->sw);
+    split_queue.push(next->se);
   }
 }
 
@@ -157,23 +160,21 @@ QTree::Node * QTree::WNbr(Node *t) {
 bool QTree::write(string const & fileName){
 
   /* YOUR CODE HERE */
-  // cout << size << endl;
-  // cout << root->size << endl;
   PNG pic(size, size);
-  DFS(pic, root);
+  DFS_render(pic, root);
 
   // include the following line to write the image to file.
   return(pic.writeToFile(fileName));
 }
 
-void QTree::DFS(PNG & pic, Node * n) {
+void QTree::DFS_render(PNG & pic, Node * n) {
   if (isLeaf(n)) {
     // Render leaf node into pic
     pair<int, int> ul = n->upLeft;
     for (int i = 0; i < n->size; i++) {
       for (int j = 0; j < n->size; j++) {
-        // draw pixel, check for frame
         RGBAPixel* pixel = pic.getPixel(ul.first + i, ul.second + j);
+        // draw pixel, check for frame
         if (drawFrame && (i == 0 || i == n->size - 1 || j == 0 || j == n->size-1)) {
           *pixel = frameColor;
         } else {
@@ -183,22 +184,36 @@ void QTree::DFS(PNG & pic, Node * n) {
     }
   } else {
     // recursively search for leaf nodes
-    DFS(pic, n->nw);
-    DFS(pic, n->ne);
-    DFS(pic, n->sw);
-    DFS(pic, n->se);
+    DFS_render(pic, n->nw);
+    DFS_render(pic, n->ne);
+    DFS_render(pic, n->sw);
+    DFS_render(pic, n->se);
   }
 }
 
 void QTree::clear() {
 
   /* YOUR CODE HERE */
-  
+  DFS_delete(root);
+}
+
+void QTree::DFS_delete(Node * n) {
+  if (n != NULL) {
+    DFS_delete(n->nw);
+    DFS_delete(n->ne);
+    DFS_delete(n->sw);
+    DFS_delete(n->se);
+    delete n;
+  }
 }
 
 
 void QTree::copy(const QTree & orig) {
 
   /* YOUR CODE HERE */
-  
+  leafBound = orig.leafBound;
+  drawFrame = orig.drawFrame;
+  balanced = orig.balanced;
+  frameColor = orig.frameColor;
+  construct(orig.im);
 }

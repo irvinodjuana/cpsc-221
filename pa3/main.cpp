@@ -30,9 +30,9 @@ int main()
   // QTree t1b(im1,10,RGBAPixel(0,0,0),true);
   // t1b.write("images/out-smallFrameBal.png");
 
-  // // check copy
-  // QTree t1copy(t1);
-  // t1copy.write("images/out-smallFrameCopy.png");
+  // check copy
+  QTree t1copy(t1);
+  t1copy.write("images/out-smallFrameCopy.png");
 
   // // check assignment
   // t1copy = t1b;

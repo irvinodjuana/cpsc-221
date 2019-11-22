@@ -212,9 +212,26 @@ class QTree {
 
   /** Additional Helpers */
 
-  void DFS(PNG & pic, Node * n);
+  /** 
+   * Performs a depth first search on node n in the QuadTree,
+   * and renders any leaf nodes found onto the PNG. Calling this
+   * method on the root node renders the whole QuadTree image. If 
+   * frames are included, it renders them into the PNG here.
+   */
+  void DFS_render(PNG & pic, Node * n);
 
-  void construct(PNG & imIn);
+  /** 
+   * Helper method for constructing the quadtree nodes from the 
+   * input PNG imgIn. Resizes into a square image and splits nodes 
+   * as necessary.
+   */
+  void construct(const PNG & imIn);
+
+  /**
+   * Performs depth first search on QTree nodes and deletes all space
+   * allocated to nodes in the QTree structure.
+   */
+  void DFS_delete(Node * n);
 
   /* =================== end of private PA3 functions ============== */
   
