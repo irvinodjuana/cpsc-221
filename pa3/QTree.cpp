@@ -66,7 +66,7 @@ void QTree::construct(PNG & imIn) {
   priority_queue<Node*, vector<Node*>, Comparator> p_queue;
   p_queue.push(root);
 
-  while(numLeaf <= (leafBound - 3)) {
+  while(numLeaf < leafBound) {
     Node* next = p_queue.top();
     p_queue.pop();
     split(next);
