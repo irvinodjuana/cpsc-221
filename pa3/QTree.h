@@ -50,6 +50,12 @@ class QTree {
     Node * se;	   // ptr to se subtree
   };
 
+  class Comparator {
+    public:
+    bool operator() (const Node* a, const Node* b) {
+      return a->var < b->var;
+    }
+  };
 
  public:
 
@@ -158,6 +164,7 @@ class QTree {
   bool balanced=false;	// true=create balanced QTree
   bool drawFrame=false;	// true=draw 1 pixel frame around every leaf square
   RGBAPixel frameColor;	// color of frame if drawn
+  int size;
 
   /* =================== private PA3 functions ============== */
 
@@ -203,9 +210,15 @@ class QTree {
    */
   void copy(const QTree & other);
 
+  /** Additional Helpers */
+
+  void DFS(PNG & pic, Node * n);
+
   /* =================== end of private PA3 functions ============== */
   
 };
+
+
   
 #endif
 

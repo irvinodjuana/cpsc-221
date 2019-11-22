@@ -45,23 +45,40 @@ QTree::QTree(PNG & imIn, int leafB, RGBAPixel frameC, bool bal)
 {
 
   /* YOUR CODE HERE */
-  
+
 }
 
 
 QTree::QTree(PNG & imIn, int leafB, bool bal)
   : leafBound(leafB), balanced(bal), drawFrame(false)
 {
-  
   /* YOUR CODE HERE */
-  
+  im = imIn;
+  pair<int, int> ul(0, 0);
+  size = biggestPow2(min(im.height(), im.width()));
+  root = new Node(im, ul, size, NULL);
+  numLeaf = 1;
+  // auto greater_var = [](Node* a, Node* b) {return a->var > b->var;};
+
+  priority_queue<Node*, vector<Node*>, Comparator> p_queue;
+  p_queue.push(root);
+
+  while(numLeaf <= (leafB - 3)) {
+    Node* next = p_queue.top();
+    p_queue.pop();
+    split(next);
+    p_queue.push(next->nw);
+    p_queue.push(next->ne);
+    p_queue.push(next->sw);
+    p_queue.push(next->se);
+  }
 }
 
 
 bool QTree::isLeaf( Node *t ) {
   
   /* YOUR CODE HERE */
-  
+  return (t->nw == NULL && t->ne == NULL && t->sw == NULL && t->se == NULL);
 }
   
 void QTree::split( Node *t ) {
@@ -78,7 +95,19 @@ void QTree::split( Node *t ) {
   // South and East) nbrs of t->parent have children. If they don't
   // we need to split them.
   
-  
+  // @TODO: finish unbalanced split
+  int newSize = t->size / 2;
+  std::pair<int, int> tempPair = t->upLeft;
+
+  t->nw = new Node(im, t->upLeft, newSize, t);
+  tempPair.first += newSize;
+  t->ne = new Node(im, tempPair, newSize, t);
+  tempPair.second += newSize;
+  t->se = new Node(im, tempPair, newSize, t);
+  tempPair.first -= newSize;
+  t->sw = new Node(im, tempPair, newSize, t);
+
+  numLeaf += 3;
 }
 
 
@@ -125,10 +154,32 @@ QTree::Node * QTree::WNbr(Node *t) {
 bool QTree::write(string const & fileName){
 
   /* YOUR CODE HERE */
-  
+  // cout << size << endl;
+  // cout << root->size << endl;
+  PNG pic(size, size);
+  DFS(pic, root);
 
   // include the following line to write the image to file.
-  return(im.writeToFile(fileName));
+  return(pic.writeToFile(fileName));
+}
+
+void QTree::DFS(PNG & pic, Node * n) {
+  if (isLeaf(n)) {
+    // Render leaf node into pic
+    pair<int, int> ul = n->upLeft;
+
+    for (int i = 0; i < n->size; i++) {
+      for (int j = 0; j < n->size; j++) {
+        RGBAPixel* pixel = pic.getPixel(ul.first + i, ul.second + j);
+        *pixel = n->avg;
+      }
+    } 
+  } else {
+    DFS(pic, n->nw);
+    DFS(pic, n->ne);
+    DFS(pic, n->sw);
+    DFS(pic, n->se);
+  }
 }
 
 void QTree::clear() {
