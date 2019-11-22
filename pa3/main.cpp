@@ -16,15 +16,15 @@ void testClear() {
 
 int main()
 {
-  // // read in an image
-  // PNG im1;
-  // im1.readFromFile("images/small.png");
-  // // use it to build a Qtree with approximately
-  // // 200 leaves and with each leaf square framed by
-  // // a black 1-pixel border
-  // QTree t1(im1,10,RGBAPixel(0,0,0));
-  // // write it to a file
-  // t1.write("images/out-smallFrame.png");
+  // read in an image
+  PNG im1;
+  im1.readFromFile("images/small.png");
+  // use it to build a Qtree with approximately
+  // 200 leaves and with each leaf square framed by
+  // a black 1-pixel border
+  QTree t1(im1,10,RGBAPixel(0,0,0));
+  // write it to a file
+  t1.write("images/out-smallFrame.png");
 
   // // use image to build a balanced QTree
   // QTree t1b(im1,10,RGBAPixel(0,0,0),true);
@@ -62,22 +62,22 @@ int main()
   // QTree t3b(im3,2000,true);
   // t3b.write("images/out-adaBal.png");
 
-  // read in an image
-  PNG im4;
-  im4.readFromFile("images/geo.png");
-  QTree t4(im4,200);
-  t4.write("images/out-geo.png");
+  // // read in an image
+  // PNG im4;
+  // im4.readFromFile("images/geo.png");
+  // QTree t4(im4,200);
+  // t4.write("images/out-geo.png");
 
   // // use image to build a balanced QTree
   // QTree t4b(im4,200,true);
   // t4b.write("images/out-geoBal.png");
 
 
-  // // read in an image
-  // PNG im5;
-  // im5.readFromFile("images/klee.png");
-  // QTree t5(im5,5000,RGBAPixel(100,100,100));
-  // t5.write("images/out-kleeFrame.png");
+  // read in an image
+  PNG im5;
+  im5.readFromFile("images/klee.png");
+  QTree t5(im5,5000,RGBAPixel(100,100,100));
+  t5.write("images/out-kleeFrame.png");
 
   // // use image to build a balanced QTree
   // QTree t5b(im5,5000,RGBAPixel(100,100,100),true);

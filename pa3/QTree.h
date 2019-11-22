@@ -214,6 +214,8 @@ class QTree {
 
   void DFS(PNG & pic, Node * n);
 
+  void construct(PNG & imIn);
+
   /* =================== end of private PA3 functions ============== */
   
 };

@@ -43,9 +43,9 @@ QTree & QTree::operator=(const QTree & rhs){
 QTree::QTree(PNG & imIn, int leafB, RGBAPixel frameC, bool bal)
   : leafBound(leafB), balanced(bal), drawFrame(true), frameColor(frameC)
 {
-
   /* YOUR CODE HERE */
-
+  frameColor = frameC;
+  construct(imIn);
 }
 
 
@@ -53,17 +53,20 @@ QTree::QTree(PNG & imIn, int leafB, bool bal)
   : leafBound(leafB), balanced(bal), drawFrame(false)
 {
   /* YOUR CODE HERE */
+  construct(imIn);
+}
+
+void QTree::construct(PNG & imIn) {
   im = imIn;
   pair<int, int> ul(0, 0);
   size = biggestPow2(min(im.height(), im.width()));
   root = new Node(im, ul, size, NULL);
   numLeaf = 1;
-  // auto greater_var = [](Node* a, Node* b) {return a->var > b->var;};
 
   priority_queue<Node*, vector<Node*>, Comparator> p_queue;
   p_queue.push(root);
 
-  while(numLeaf <= (leafB - 3)) {
+  while(numLeaf <= (leafBound - 3)) {
     Node* next = p_queue.top();
     p_queue.pop();
     split(next);
@@ -167,14 +170,19 @@ void QTree::DFS(PNG & pic, Node * n) {
   if (isLeaf(n)) {
     // Render leaf node into pic
     pair<int, int> ul = n->upLeft;
-
     for (int i = 0; i < n->size; i++) {
       for (int j = 0; j < n->size; j++) {
+        // draw pixel, check for frame
         RGBAPixel* pixel = pic.getPixel(ul.first + i, ul.second + j);
-        *pixel = n->avg;
+        if (drawFrame && (i == 0 || i == n->size - 1 || j == 0 || j == n->size-1)) {
+          *pixel = frameColor;
+        } else {
+          *pixel = n->avg;
+        }
       }
-    } 
+    }
   } else {
+    // recursively search for leaf nodes
     DFS(pic, n->nw);
     DFS(pic, n->ne);
     DFS(pic, n->sw);
