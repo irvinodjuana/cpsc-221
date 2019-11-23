@@ -157,14 +157,15 @@ class QTree {
    * You must use these as specified in the spec and may not rename them.
    * You may add more if you need them.
    */
-  Node* root;		// ptr to the root of the QTree
-  int numLeaf;		// number of leaves in quad tree
-  PNG im;		// image
-  int leafBound;	// approx. upper bound on number of leaves in QTree
+  Node* root;		        // ptr to the root of the QTree
+  int numLeaf;		      // number of leaves in quad tree
+  PNG im;		            // image
+  int leafBound;	      // approx. upper bound on number of leaves in QTree
   bool balanced=false;	// true=create balanced QTree
   bool drawFrame=false;	// true=draw 1 pixel frame around every leaf square
   RGBAPixel frameColor;	// color of frame if drawn
-  int size;
+  int size;             // side length of whole QTree
+  priority_queue<Node*, vector<Node*>, Comparator> split_queue;
 
   /* =================== private PA3 functions ============== */
 

@@ -66,17 +66,12 @@ void QTree::construct(const PNG & imIn) {
 
   // Create priority queue to split nodes in order 
   // of variance, up to approx. leafBound
-  priority_queue<Node*, vector<Node*>, Comparator> split_queue;
   split_queue.push(root);
 
   while(numLeaf < leafBound) {
     Node* next = split_queue.top();
     split_queue.pop();
     split(next);
-    split_queue.push(next->nw);
-    split_queue.push(next->ne);
-    split_queue.push(next->sw);
-    split_queue.push(next->se);
   }
 }
 
@@ -84,6 +79,7 @@ void QTree::construct(const PNG & imIn) {
 bool QTree::isLeaf( Node *t ) {
   
   /* YOUR CODE HERE */
+  if (t == NULL) return false;
   return (t->nw == NULL && t->ne == NULL && t->sw == NULL && t->se == NULL);
 }
   
@@ -100,8 +96,41 @@ void QTree::split( Node *t ) {
   // the North and West (or North and East or South and West or
   // South and East) nbrs of t->parent have children. If they don't
   // we need to split them.
+
+  if (t == NULL || !isLeaf(t)) return;
+
+  // check balancing if non-root node
+  if (balanced && (t->parent != NULL)) {
+      if (t == t->parent->nw) {
+        // NW node: check/split parent N and W nbrs
+        Node* parNNbr = NNbr(t->parent);
+        Node* parWNbr = WNbr(t->parent);
+        if (isLeaf(parNNbr)) split(parNNbr);
+        if (isLeaf(parWNbr)) split(parWNbr);
+
+      } else if (t == t->parent->ne) {
+        // NE node: check/split parent N and E nbrs
+        Node* parNNbr = NNbr(t->parent);
+        Node* parENbr = ENbr(t->parent);
+        if (isLeaf(parNNbr)) split(parNNbr);
+        if (isLeaf(parENbr)) split(parENbr);
+
+      } else if (t == t->parent->sw) {
+        // SW node: check/split parent S and W nbrs
+        Node* parSNbr = SNbr(t->parent);
+        Node* parWNbr = WNbr(t->parent);
+        if (isLeaf(parSNbr)) split(parSNbr);
+        if (isLeaf(parWNbr)) split(parWNbr);
+
+      } else if (t == t->parent->se) {
+        // SE node: check/split parent S and E nbrs
+        Node* parSNbr = SNbr(t->parent);
+        Node* parENbr = ENbr(t->parent);
+        if (isLeaf(parSNbr)) split (parSNbr);
+        if (isLeaf(parENbr)) split (parENbr);
+      }
+  }
   
-  // @TODO: finish unbalanced split
   int newSize = t->size / 2;
   std::pair<int, int> tempPair = t->upLeft;
 
@@ -112,6 +141,11 @@ void QTree::split( Node *t ) {
   t->se = new Node(im, tempPair, newSize, t);
   tempPair.first -= newSize;
   t->sw = new Node(im, tempPair, newSize, t);
+
+  split_queue.push(t->nw);
+  split_queue.push(t->ne);
+  split_queue.push(t->sw);
+  split_queue.push(t->se);
 
   numLeaf += 3;
 }
@@ -124,7 +158,22 @@ void QTree::split( Node *t ) {
 QTree::Node * QTree::NNbr(Node *t) {
 
   /* YOUR CODE HERE */
+  if (t == NULL || t->parent == NULL) return NULL;
+
+  if (t == t->parent->sw) return t->parent->nw;
+  if (t == t->parent->se) return t->parent->ne;
   
+  Node* parNNbr = NNbr(t->parent);
+  if (parNNbr == NULL) return NULL;
+  if (isLeaf(parNNbr)) {
+    if (parNNbr->size > (2 * t->size)) return NULL;
+    return parNNbr;
+  }
+
+  if (t == t->parent->nw) return parNNbr->sw;
+  if (t == t->parent->ne) return parNNbr->se;
+
+  return NULL; // will never reach
 }
 
 /* SNbr(t)
@@ -134,7 +183,22 @@ QTree::Node * QTree::NNbr(Node *t) {
 QTree::Node * QTree::SNbr(Node *t) {
 
   /* YOUR CODE HERE */
+  if (t == NULL || t->parent == NULL) return NULL;
+
+  if (t == t->parent->nw) return t->parent->sw;
+  if (t == t->parent->ne) return t->parent->se;
+
+  Node* parSNbr = SNbr(t->parent);
+  if (parSNbr == NULL) return NULL;
+  if (isLeaf(parSNbr)) {
+    if (parSNbr->size > (2 * t->size)) return NULL;
+    return parSNbr;
+  }
+
+  if (t == t->parent->sw) return parSNbr->nw;
+  if (t == t->parent->se) return parSNbr->ne;
   
+  return NULL; // will never reach
 }
 
 /* ENbr(t)
@@ -144,7 +208,22 @@ QTree::Node * QTree::SNbr(Node *t) {
 QTree::Node * QTree::ENbr(Node *t) {
 
   /* YOUR CODE HERE */
+  if (t == NULL || t->parent == NULL) return NULL;
+
+  if (t == t->parent->nw) return t->parent->ne;
+  if (t == t->parent->sw) return t->parent->se;
+
+  Node* parENbr = ENbr(t->parent);
+  if (parENbr == NULL) return NULL;
+  if (isLeaf(parENbr)) {
+    if (parENbr->size > (2 * t->size)) return NULL;
+    return parENbr;
+  }
+
+  if (t == t->parent->ne) return parENbr->nw;
+  if (t == t->parent->se) return parENbr->sw;
   
+  return NULL; // will never reach
 }
 
 /* WNbr(t)
@@ -154,7 +233,22 @@ QTree::Node * QTree::ENbr(Node *t) {
 QTree::Node * QTree::WNbr(Node *t) {
 
   /* YOUR CODE HERE */
+  if (t == NULL || t->parent == NULL) return NULL;
+
+  if (t == t->parent->ne) return t->parent->nw;
+  if (t == t->parent->se) return t->parent->sw;
+
+  Node* parWNbr = WNbr(t->parent);
+  if (parWNbr == NULL) return NULL;
+  if (isLeaf(parWNbr)) {
+    if (parWNbr-> size > (2 * t->size)) return NULL;
+    return parWNbr;
+  }
+
+  if (t == t->parent->nw) return parWNbr->ne;
+  if (t == t->parent->sw) return parWNbr->se;
   
+  return NULL; // will never reach
 }
 
 bool QTree::write(string const & fileName){
@@ -215,5 +309,6 @@ void QTree::copy(const QTree & orig) {
   drawFrame = orig.drawFrame;
   balanced = orig.balanced;
   frameColor = orig.frameColor;
+  split_queue = priority_queue<Node*, vector<Node*>, Comparator>();
   construct(orig.im);
 }
